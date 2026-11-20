@@ -1,23 +1,86 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Interactive HTML Projects</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 40px 8%;
+            color: #263B52;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: auto;
+        }
+
+        .project {
+            width: 350px;
+            text-align: center;
+        }
+
+        .preview {
+            width: 350px;
+            height: 220px;
+            background-color: #E8EDF3;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .preview iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            pointer-events: none;
+        }
+
+        .project a {
+            display: inline-block;
+            margin-top: 12px;
+            color: #477CCB;
+            text-decoration: none;
+        }
+
+        .project a:hover {
+            text-decoration: underline;
+        }
+    </style>
 </head>
+
 <body>
 
     <h1>Interactive HTML Projects</h1>
 
-    <div style="background-color: #E8EDF3; padding: 40px; width: 300px; text-align: center; border-radius: 10px;">
-        <h2>NPV Analyzer</h2>
-    </div>
+    <p><a href="../">Back to Homepage</a></p>
 
-    <p>
-        <a href="npvanalyzer/index.html" target="_blank">
-            Open NPV Analyzer
-        </a>
-    </p>
+    <div class="container">
+
+        <div class="project">
+
+            <div class="preview">
+                <iframe
+                    src="npvanalyzer/index.html"
+                    title="NPV Analyzer Preview">
+                </iframe>
+            </div>
+
+            <a href="npvanalyzer/index.html" target="_blank">
+                Open NPV Analyzer
+            </a>
+
+        </div>
+
+    </div>
 
 </body>
 </html>
