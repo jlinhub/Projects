@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -35,11 +34,14 @@
             background: #E8EDF3;
             aspect-ratio: 5 / 3;
             border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #263B52;
-            font-size: 18px;
+            overflow: hidden;
+        }
+
+        .preview iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            pointer-events: none;
         }
 
         .project h3 {
@@ -68,8 +70,13 @@
     <div class="container">
 
         <div class="project">
+
             <div class="preview">
-                NPV Analyzer
+                <iframe
+                    src="npv-analyzer/"
+                    title="NPV Analyzer"
+                    scrolling="no">
+                </iframe>
             </div>
 
             <h3>NPV Analyzer</h3>
@@ -77,6 +84,7 @@
             <a href="npv-analyzer/" target="_blank">
                 Open Interactive Website
             </a>
+
         </div>
 
     </div>
