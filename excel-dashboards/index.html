@@ -1,20 +1,89 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Customer Success Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Excel Dashboards</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 40px 8%;
+            color: #304A3B;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: auto;
+        }
+
+        .project {
+            width: 600px;
+            max-width: 100%;
+            text-align: center;
+        }
+
+        .preview {
+            width: 100%;
+            overflow: hidden;
+            border-radius: 10px;
+        }
+
+        .preview img {
+            display: block;
+            width: 100%;
+            height: auto;
+        }
+
+        .project h2 {
+            font-size: 20px;
+            margin: 15px 0 8px;
+        }
+
+        .project a {
+            display: inline-block;
+            margin-top: 4px;
+            color: #477CCB;
+            text-decoration: none;
+        }
+
+        .project a:hover {
+            text-decoration: underline;
+        }
+    </style>
 </head>
+
 <body>
 
-    <img src="image/Customer%20Success%20Dashboard.png"
-         alt="Customer Success Dashboard"
-         style="width:100%;">
+    <h1>Excel Dashboards</h1>
 
-    <p>
-        <a href="Interactive%20Dashboard%20Case%20V2.xlsx" download>
-            Download Excel Workbook
-        </a>
-    </p>
+    <p><a href="../">Back to Homepage</a></p>
+
+    <div class="container">
+
+        <div class="project">
+
+            <div class="preview">
+                <img src="customer-success/image/Customer%20Success%20Dashboard.png"
+                     alt="Customer Success Dashboard">
+            </div>
+
+            <h2>Customer Success Dashboard</h2>
+
+            <a href="customer-success/Interactive%20Dashboard%20Case%20V2.xlsx" download>
+                Download Excel Workbook
+            </a>
+
+        </div>
+
+    </div>
 
 </body>
 </html>
