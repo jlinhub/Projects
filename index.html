@@ -1,1 +1,110 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Projects</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #ffffff;
+            margin: 0;
+            padding: 60px 8%;
+            color: #263B52;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 32px;
+            margin-bottom: 40px;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 30px;
+            max-width: 1000px;
+            margin: auto;
+        }
+
+        .project-box {
+            aspect-ratio: 5 / 3;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-decoration: none;
+            transition: transform 0.2s ease;
+        }
+
+        .project-box:hover {
+            transform: translateY(-5px);
+        }
+
+        .html {
+            background-color: #B9C9DC;
+            color: #263B52;
+        }
+
+        .excel {
+            background-color: #C2D4C8;
+            color: #304A3B;
+        }
+
+        .project-box svg {
+            width: 38px;
+            height: 38px;
+            margin-bottom: 14px;
+        }
+
+        .project-box span {
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-align: center;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>My Projects</h1>
+
+    <div class="container">
+
+        <a href="html-projects/" class="project-box html">
+            <svg viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="1.8"
+                 stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="16 18 22 12 16 6"></polyline>
+                <polyline points="8 6 2 12 8 18"></polyline>
+            </svg>
+            <span>INTERACTIVE HTML PROJECTS</span>
+        </a>
+
+        <a href="excel-dashboards/" class="project-box excel">
+            <svg viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="1.8"
+                 stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 3v18h18"></path>
+                <path d="M18 17V9"></path>
+                <path d="M13 17V5"></path>
+                <path d="M8 17v-3"></path>
+            </svg>
+            <span>EXCEL DASHBOARDS</span>
+        </a>
+
+    </div>
+
+</body>
+</html>
+
