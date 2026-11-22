@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Inventory Costing Methods Comparison</title>
+<style>
+  :root { --ink:#202938; --muted:#667085; --line:#d9e0e8; --panel:#f7f9fc; --blue:#3478c8; --orange:#e49a35; --green:#29966f; }
+  * { box-sizing:border-box; }
+  body { margin:0; padding:28px 18px; background:#f2f5f9; color:var(--ink); font:15px/1.5 Arial,Helvetica,sans-serif; }
+  main { max-width:1100px; margin:auto; }
+  h1 { margin:0 0 6px; font-size:27px; }
+  .intro { color:var(--muted); margin:0 0 22px; }
+  .panel { background:white; border:1px solid var(--line); border-radius:14px; padding:20px; margin:16px 0; box-shadow:0 3px 12px #24364b0a; }
+  h2 { font-size:18px; margin:0 0 14px; }
+  .controls { display:grid; grid-template-columns:repeat(auto-fit,minmax(175px,1fr)); gap:14px; }
+  label { display:block; font-size:13px; font-weight:700; color:#455166; margin-bottom:6px; }
+  select, button { font:inherit; }
+  select { width:100%; padding:10px 11px; border:1px solid #cbd4df; border-radius:8px; background:white; color:var(--ink); }
+  .purchase-row { display:grid; grid-template-columns:1fr 1fr auto; gap:12px; align-items:end; padding:12px 0; border-bottom:1px solid #edf0f4; }
+  .purchase-row:last-child { border-bottom:0; }
+  button { border:0; border-radius:8px; padding:10px 14px; cursor:pointer; font-weight:700; }
+  .primary { color:white; background:var(--blue); }
+  .secondary { color:#245b99; background:#eaf2fc; }
+  .remove { color:#a33333; background:#fff0f0; }
+  .actions { display:flex; gap:10px; flex-wrap:wrap; margin-top:14px; }
+  .hint { color:var(--muted); font-size:12px; margin:8px 0 0; }
+  .summary { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:18px; }
+  .metric { background:var(--panel); border-radius:10px; padding:13px; }
+  .metric span { display:block; color:var(--muted); font-size:12px; }
+  .metric strong { font-size:20px; }
+  .chart-wrap { position:relative; height:360px; }
+  canvas { width:100%; height:100%; display:block; }
+  table { width:100%; border-collapse:collapse; margin-top:16px; }
+  th,td { text-align:right; padding:11px 10px; border-bottom:1px solid #e8edf2; }
+  th:first-child,td:first-child { text-align:left; }
+  th { color:#536176; font-size:13px; }
+  .legend { display:flex; gap:18px; flex-wrap:wrap; color:var(--muted); font-size:13px; margin-top:8px; }
+  .dot { display:inline-block; width:10px; height:10px; border-radius:3px; margin-right:6px; }
+  @media(max-width:600px) { body{padding:16px 10px}.panel{padding:15px}.summary{grid-template-columns:1fr}.purchase-row{grid-template-columns:1fr 1fr}.purchase-row .remove{grid-column:1/-1}.chart-wrap{height:290px} }
+</style>
+</head>
+<body>
+<main>
+  <h1>Inventory Costing Methods</h1>
+  <p class="intro">Compare Cost of Goods Sold (COGS) and ending inventory using LIFO, FIFO, and weighted-average costing. Calculations use the periodic inventory system.</p>
+
+  <section class="panel">
+    <h2>1. Beginning inventory</h2>
+    <div class="controls">
+      <div><label for="beginQty">Beginning inventory quantity (units)</label><select id="beginQty"></select></div>
+      <div><label for="beginCost">Beginning inventory unit cost ($)</label><select id="beginCost"></select></div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>2. Purchases</h2>
+    <div id="purchases"></div>
+    <div class="actions"><button class="primary" id="addPurchase" type="button">+ Add purchase entry</button></div>
+    <p class="hint">Each purchase entry can have its own quantity and unit cost. You can add or remove as many entries as needed.</p>
+  </section>
+
+  <section class="panel">
+    <h2>3. Units sold</h2>
+    <div class="controls">
+      <div><label for="unitsSold">Units sold</label><select id="unitsSold"></select></div>
+      <div class="metric"><span>Total units available</span><strong id="availableUnits">350</strong></div>
+      <div class="metric"><span>Units remaining</span><strong id="remainingUnits">200</strong></div>
+    </div>
+    <p class="hint">The units-sold dropdown is limited to the total quantity available in beginning inventory plus all purchases.</p>
+  </section>
+
+  <section class="panel">
+    <h2>4. COGS and ending inventory comparison</h2>
+    <div class="summary">
+      <div class="metric"><span>Total units available</span><strong id="sumAvailable">350</strong></div>
+      <div class="metric"><span>Total cost of goods available</span><strong id="sumCost">$4,750.00</strong></div>
+      <div class="metric"><span>Units sold / remaining</span><strong id="sumUnits">150 / 200</strong></div>
+    </div>
+    <div class="chart-wrap"><canvas id="chart" aria-label="Side-by-side bar chart comparing COGS and ending inventory under LIFO, FIFO, and weighted average"></canvas></div>
+    <div class="legend">
+      <span><i class="dot" style="background:var(--blue)"></i>Cost of Goods Sold</span>
+      <span><i class="dot" style="background:var(--orange)"></i>Ending Inventory</span>
+    </div>
+    <table>
+      <thead><tr><th>Costing method</th><th>COGS</th><th>Ending inventory</th></tr></thead>
+      <tbody id="results"></tbody>
+    </table>
+    <p class="hint">Weighted-average unit cost = total cost of goods available ÷ total units available. Dollar amounts are rounded to the nearest cent.</p>
+  </section>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+const money = n => n.toLocaleString('en-US',{style:'currency',currency:'USD'});
+const intOptions = (min,max,step=1) => Array.from({length:Math.floor((max-min)/step)+1},(_,i)=>min+i*step);
+function fillSelect(el, values, selected) {
+  el.innerHTML = values.map(v=>`<option value="${v}" ${v===selected?'selected':''}>${Number(v).toLocaleString('en-US')}</option>`).join('');
+}
+fillSelect($('beginQty'),intOptions(0,1000,10),100);
+fillSelect($('beginCost'),intOptions(1,100,1),10);
+
+let purchaseEntries = [{qty:250,cost:15}];
+function purchaseMarkup(entry,index) {
+  return `<div class="purchase-row" data-index="${index}">
+    <div><label>Purchase ${index+1} quantity (units)</label><select class="purchase-qty">${intOptions(0,1000,10).map(v=>`<option value="${v}" ${v===entry.qty?'selected':''}>${v.toLocaleString('en-US')}</option>`).join('')}</select></div>
+    <div><label>Purchase ${index+1} unit cost ($)</label><select class="purchase-cost">${intOptions(1,100,1).map(v=>`<option value="${v}" ${v===entry.cost?'selected':''}>${v.toLocaleString('en-US')}</option>`).join('')}</select></div>
+    <button class="remove" type="button" aria-label="Delete purchase ${index+1}" ${purchaseEntries.length===1?'disabled title="At least one purchase entry is required"':''}>Delete</button>
+  </div>`;
+}
+function renderPurchases() {
+  $('purchases').innerHTML = purchaseEntries.map(purchaseMarkup).join('');
+  [...$('purchases').querySelectorAll('.purchase-row')].forEach((row,i)=>{
+    row.querySelector('.purchase-qty').addEventListener('change',e=>{purchaseEntries[i].qty=Number(e.target.value);update();});
+    row.querySelector('.purchase-cost').addEventListener('change',e=>{purchaseEntries[i].cost=Number(e.target.value);update();});
+    row.querySelector('.remove').addEventListener('click',()=>{if(purchaseEntries.length>1){purchaseEntries.splice(i,1);renderPurchases();update();}});
+  });
+}
+$('addPurchase').addEventListener('click',()=>{purchaseEntries.push({qty:0,cost:15});renderPurchases();update();});
+$('beginQty').addEventListener('change',update);
+$('beginCost').addEventListener('change',update);
+
+function inventoryLayers() {
+  const layers=[{qty:Number($('beginQty').value),cost:Number($('beginCost').value),name:'Beginning inventory'}];
+  purchaseEntries.forEach((p,i)=>layers.push({qty:p.qty,cost:p.cost,name:`Purchase ${i+1}`}));
+  return layers;
+}
+function calculate() {
+  const layers=inventoryLayers();
+  const totalQty=layers.reduce((s,x)=>s+x.qty,0);
+  const totalCost=layers.reduce((s,x)=>s+x.qty*x.cost,0);
+  const sold=Number($('unitsSold').value);
+  // Periodic FIFO: oldest inventory costs are assigned to units sold.
+  let left=sold, fifoCOGS=0;
+  for(const layer of layers){const take=Math.min(left,layer.qty);fifoCOGS+=take*layer.cost;left-=take;}
+  // Periodic LIFO: newest inventory costs are assigned to units sold.
+  left=sold; let lifoCOGS=0;
+  for(const layer of [...layers].reverse()){const take=Math.min(left,layer.qty);lifoCOGS+=take*layer.cost;left-=take;}
+  const avg=totalQty?totalCost/totalQty:0;
+  const avgCOGS=sold*avg;
+  const remain=totalQty-sold;
+  return {
+    totalQty,totalCost,sold,remain,
+    rows:[
+      {name:'LIFO',cogs:lifoCOGS,ending:totalCost-lifoCOGS},
+      {name:'FIFO',cogs:fifoCOGS,ending:totalCost-fifoCOGS},
+      {name:'Weighted average',cogs:avgCOGS,ending:totalCost-avgCOGS}
+    ]
+  };
+}
+function update() {
+  const layers=inventoryLayers();
+  const total=layers.reduce((s,x)=>s+x.qty,0);
+  const soldEl=$('unitsSold'), previous=Number(soldEl.value||150);
+  fillSelect(soldEl,intOptions(0,total,1),Math.min(previous,total));
+  const d=calculate();
+  $('availableUnits').textContent=d.totalQty.toLocaleString('en-US');
+  $('remainingUnits').textContent=d.remain.toLocaleString('en-US');
+  $('sumAvailable').textContent=d.totalQty.toLocaleString('en-US');
+  $('sumCost').textContent=money(d.totalCost);
+  $('sumUnits').textContent=`${d.sold.toLocaleString('en-US')} / ${d.remain.toLocaleString('en-US')}`;
+  $('results').innerHTML=d.rows.map(r=>`<tr><td>${r.name}</td><td>${money(r.cogs)}</td><td>${money(r.ending)}</td></tr>`).join('');
+  drawChart(d.rows);
+}
+$('unitsSold').addEventListener('change',update);
+
+function drawChart(rows) {
+  const canvas=$('chart'), rect=canvas.getBoundingClientRect(), ratio=window.devicePixelRatio||1;
+  canvas.width=Math.max(1,Math.floor(rect.width*ratio));
+  canvas.height=Math.max(1,Math.floor(rect.height*ratio));
+  const ctx=canvas.getContext('2d'); ctx.scale(ratio,ratio);
+  const w=rect.width,h=rect.height;
+  const pad={l:72,r:20,t:20,b:58}, plotW=w-pad.l-pad.r, plotH=h-pad.t-pad.b;
+  const maxVal=Math.max(1,...rows.flatMap(r=>[r.cogs,r.ending]))*1.15;
+  ctx.clearRect(0,0,w,h);
+  ctx.font='12px Arial'; ctx.textAlign='right'; ctx.textBaseline='middle'; ctx.fillStyle='#687487'; ctx.strokeStyle='#e6ebf1'; ctx.lineWidth=1;
+  for(let i=0;i<=5;i++){const val=maxVal*i/5,y=pad.t+plotH-(val/maxVal)*plotH;ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(w-pad.r,y);ctx.stroke();ctx.fillText(money(val).replace('.00',''),pad.l-9,y);}
+  const groupW=plotW/rows.length, barW=Math.min(42,groupW*.27), gap=8;
+  rows.forEach((r,i)=>{
+    const center=pad.l+groupW*(i+.5);
+    [[r.cogs,'#3478c8',-barW-gap/2],[r.ending,'#e49a35',gap/2]].forEach(([value,color,offset])=>{
+      const bh=value/maxVal*plotH,x=center+offset-barW/2,y=pad.t+plotH-bh;
+      ctx.fillStyle=color;ctx.beginPath();ctx.roundRect(x,y,barW,bh,4);ctx.fill();
+      ctx.fillStyle='#344054';ctx.font='11px Arial';ctx.textAlign='center';ctx.textBaseline='bottom';
+      if(bh>24)ctx.fillText(money(value),x+barW/2,y-4);
+    });
+    ctx.fillStyle='#344054';ctx.font='12px Arial';ctx.textAlign='center';ctx.textBaseline='top';
+    ctx.fillText(r.name,center,h-pad.b+16);
+  });
+}
+window.addEventListener('resize',()=>drawChart(calculate().rows));
+renderPurchases();
+update();
+</script>
+</body>
+</html>
